@@ -1,6 +1,11 @@
 import { Request, Response } from "express";
 import prisma from "../prisma/client";
 
+type Venta = {
+  total: number;
+  // otros campos si los hay
+};
+
 // Ventas por día
 export const salesByDay = async (req: Request, res: Response) => {
   try {
@@ -13,7 +18,7 @@ export const salesByDay = async (req: Request, res: Response) => {
       include: { productos: true },
     });
 
-    const total = ventas.reduce((acc, v) => acc + v.total, 0);
+    const total = ventas.reduce((acc: number, v: Venta) => acc + v.total, 0);
 
     res.json({ total, ventas });
   } catch (err) {
@@ -33,7 +38,7 @@ export const salesByWeek = async (req: Request, res: Response) => {
       include: { productos: true },
     });
 
-    const total = ventas.reduce((acc, v) => acc + v.total, 0);
+    const total = ventas.reduce((acc: number, v: Venta) => acc + v.total, 0);
     res.json({ total, ventas });
   } catch (err) {
     res.status(500).json({ error: "Error al obtener ventas de la semana" });
@@ -51,7 +56,7 @@ export const salesByMonth = async (req: Request, res: Response) => {
       include: { productos: true },
     });
 
-    const total = ventas.reduce((acc, v) => acc + v.total, 0);
+    const total = ventas.reduce((acc: number, v: Venta) => acc + v.total, 0);
     res.json({ total, ventas });
   } catch (err) {
     res.status(500).json({ error: "Error al obtener ventas del mes" });

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsc && cpx \"uploads/**/*\" dist/uploads && cpx \"../frontend/build/**/*\" dist/frontend",
+    "build": "npx dotenv -e .env -- prisma migrate dev --name init --schema=prisma/schema.prisma && tsc && cpx \"uploads/**/*\" dist/uploads && cpx \"../frontend/build/**/*\" dist/frontend",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

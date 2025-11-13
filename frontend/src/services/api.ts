@@ -1,4 +1,7 @@
-const API_URL = process.env.REACT_APP_API_URL || "/api";
+const isProd = process.env.REACT_APP_ENV_FLAG === "1";
+const API_URL = isProd ? "/api" : process.env.REACT_APP_API_URL || "/api";
+
+console.log("API_URL", API_URL);
 
 export async function getProducts() {
   const res = await fetch(`${API_URL}/products`);

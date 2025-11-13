@@ -1,4 +1,4 @@
-const API_URL = (import.meta as any).env?.VITE_API_URL || "/api"; // usa variable o fallback local
+const API_URL = process.env.REACT_APP_API_URL || "/api";
 
 export async function getProducts() {
   const res = await fetch(`${API_URL}/products`);

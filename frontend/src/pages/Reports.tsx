@@ -1,21 +1,58 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { getSalesReport } from "../services/api";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
 
-type SaleReport = { fecha: string; total: number };
+type Sale = {
+  fecha: string;
+  total: number;
+  productos: { nombre: string; cantidad: number }[];
+};
+
+type TopProduct = {
+  nombre: string;
+  vendidos: number;
+};
+
+type ReportData = {
+  ventas: Sale[];
+  totalGeneral: number;
+  cantidadVentas: number;
+  ticketPromedio: number;
+  topProductos: TopProduct[];
+};
 
 export default function Reports() {
   const [period, setPeriod] = useState<"day" | "week" | "month">("day");
-  const [data, setData] = useState<SaleReport[]>([]);
+  const [report, setReport] = useState<ReportData>({
+    ventas: [],
+    totalGeneral: 0,
+    cantidadVentas: 0,
+    ticketPromedio: 0,
+    topProductos: [],
+  });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     loadReport();
   }, [period]);
 
-  async function loadReport() {
-    const report = await getSalesReport(period);
-    setData(report.ventas || []); // Ajuste si tu API devuelve { ventas: [...] }
-  }
+  const loadReport = async () => {
+    setLoading(true);
+    try {
+      const data = await getSalesReport(period);
+      setReport(data);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="p-6">
@@ -23,11 +60,13 @@ export default function Reports() {
 
       {/* Selector de periodo */}
       <div className="flex gap-4 mb-6">
-        {["day", "week", "month"].map(p => (
+        {["day", "week", "month"].map((p) => (
           <button
             key={p}
             className={`px-5 py-2 rounded-lg font-medium transition-colors ${
-              period === p ? "bg-blue-600 text-white shadow-lg" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              period === p
+                ? "bg-blue-600 text-white shadow-lg"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
             onClick={() => setPeriod(p as "day" | "week" | "month")}
           >
@@ -36,11 +75,27 @@ export default function Reports() {
         ))}
       </div>
 
-      {/* Contenedor del gráfico */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        {data.length ? (
+      {/* Totales */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white shadow rounded-xl p-4 text-center">
+          <p className="text-gray-500 text-sm">Ventas registradas</p>
+          <p className="text-2xl font-bold">{report.cantidadVentas}</p>
+        </div>
+        <div className="bg-white shadow rounded-xl p-4 text-center">
+          <p className="text-gray-500 text-sm">Total vendido</p>
+          <p className="text-2xl font-bold">${report.totalGeneral.toLocaleString()}</p>
+        </div>
+        <div className="bg-white shadow rounded-xl p-4 text-center">
+          <p className="text-gray-500 text-sm">Ticket promedio</p>
+          <p className="text-2xl font-bold">${report.ticketPromedio.toFixed(2)}</p>
+        </div>
+      </div>
+
+      {/* Gráfico */}
+      <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        {report.ventas.length ? (
           <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={data}>
+            <BarChart data={report.ventas}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis dataKey="fecha" tick={{ fill: "#4B5563", fontSize: 12 }} />
               <YAxis tick={{ fill: "#4B5563", fontSize: 12 }} />

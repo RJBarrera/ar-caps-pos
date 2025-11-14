@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ImagePreview from "./ImagePreview";
+import ProductFilters from "./ProductFilters";
 import { getProducts, createProduct, updateProduct } from "../services/api";
 
 type Product = {
@@ -25,6 +26,7 @@ export default function Products() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false); // Estado del modal
+  const [filter, setFilter] = useState("all");
 
   useEffect(() => {
     loadProducts();
@@ -93,14 +95,25 @@ export default function Products() {
     }
   }
 
-  const filteredProducts = products.filter(
-    (p) =>
+  const filteredProducts = products.filter((p) => {
+    // Filtro de búsqueda
+    const matchesSearch =
       p.nombre.toLowerCase().includes(search.toLowerCase()) ||
-      p.modelo?.toLowerCase().includes(search.toLowerCase())
-  );
+      p.modelo?.toLowerCase().includes(search.toLowerCase());
+
+    // Filtro de disponibilidad
+    const matchesFilter =
+      filter === "available"
+        ? p.cantidad > 0
+        : filter === "out"
+        ? p.cantidad === 0
+        : true; // all
+
+    return matchesSearch && matchesFilter;
+  });
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-4 min-h-screen">
       {/* Header con botón para abrir modal */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg shadow p-4 mb-6">
         <div>
@@ -117,26 +130,28 @@ export default function Products() {
         </button>
       </div>
 
-      {/* Buscador y filtros */}
-      <div className="relative mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <input
-          type="text"
-          placeholder="Buscar producto..."
-          className="border rounded-lg p-2 pl-9 w-full md:w-1/3 focus:ring-2 focus:ring-blue-200 outline-none"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-      <div className="flex gap-2 mb-4 flex-wrap">
-        <button className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm">
-          Todos
-        </button>
-        <button className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm">
-          Disponibles
-        </button>
-        <button className="px-3 py-1 bg-red-100 text-red-700 rounded text-sm">
-          Agotados
-        </button>
+      {/* Buscador + Filtro en la misma línea */}
+      <div className="mb-6 flex items-center justify-between gap-3">
+        {/* Input de búsqueda */}
+        <div className="relative w-full">
+          <input
+            type="text"
+            placeholder="Buscar producto..."
+            className="border rounded-lg p-2 pl-9 w-full focus:ring-2 focus:ring-blue-200 outline-none"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          {/* Icono lupa dentro del input */}
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            🔍
+          </span>
+        </div>
+
+        {/* Botón/ícono de filtros */}
+        <div>
+          <ProductFilters setFilter={setFilter} />
+        </div>
       </div>
 
       {/* Grid de productos */}
@@ -225,17 +240,17 @@ export default function Products() {
                 onChange={(e) => setModelo(e.target.value)}
               />
               <input
-                type="number"
+                // type="number"
                 className="border border-gray-300 rounded-xl p-3 w-full focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition placeholder-gray-400"
                 placeholder="Precio"
-                // value={precio}
+                value={precio}
                 onChange={(e) => setPrecio(Number(e.target.value))}
               />
               <input
-                type="number"
+                // type="number"
                 className="border border-gray-300 rounded-xl p-3 w-full focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition placeholder-gray-400"
                 placeholder="Cantidad"
-                // value={cantidad}
+                value={cantidad}
                 onChange={(e) => setCantidad(Number(e.target.value))}
               />
 

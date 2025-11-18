@@ -12,6 +12,7 @@ export default function Login({ onLogin }: LoginProps) {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Usuario de prueba
     if (email === "arcaps" && password === "123456") {
       onLogin();
     } else {
@@ -26,7 +27,9 @@ export default function Login({ onLogin }: LoginProps) {
           🔐 Iniciar Sesión
         </h1>
 
-        {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
+        {error && (
+          <p className="text-red-500 text-sm text-center mb-4">{error}</p>
+        )}
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <input

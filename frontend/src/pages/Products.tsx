@@ -37,7 +37,7 @@ export default function Products() {
     setProducts(data);
   }
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -47,10 +47,29 @@ export default function Products() {
     img.onload = () => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d")!;
-      canvas.width = img.width;
-      canvas.height = img.height;
+      
+      // Aquí puedes redimensionar si quieres
+      const MAX_WIDTH = 112;
+      const MAX_HEIGHT = 112;
+      let width = img.width;
+      let height = img.height;
 
-      ctx.drawImage(img, 0, 0);
+      if (width > height) {
+        if (width > MAX_WIDTH) {
+          height = (height * MAX_WIDTH) / width;
+          width = MAX_WIDTH;
+        }
+      } else {
+        if (height > MAX_HEIGHT) {
+          width = (width * MAX_HEIGHT) / height;
+          height = MAX_HEIGHT;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      ctx.drawImage(img, 0, 0, width, height);
 
       canvas.toBlob(
         (blob) => {
@@ -59,19 +78,53 @@ export default function Products() {
           const webpFile = new File(
             [blob],
             file.name.replace(/\.\w+$/, ".webp"),
-            {
-              type: "image/webp",
-            }
+            { type: "image/webp" }
           );
 
           setImagenFile(webpFile);
           setPreview(URL.createObjectURL(blob));
         },
         "image/webp",
-        0.8 // Calidad
+        0.8
       );
     };
   }
+
+  // Función para redimensionar una imagen en el navegador
+  const resizeImage = (
+    file: File,
+    maxWidth: number,
+    maxHeight: number
+  ): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let { width, height } = img;
+
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = width * ratio;
+          height = height * ratio;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) resolve(blob);
+          },
+          file.type,
+          0.8
+        ); // 0.8 = calidad (80%)
+      };
+    });
+  };
 
   function resetForm() {
     setNombre("");

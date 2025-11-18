@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import ProductFilters from "./ProductFilters";
 import Swal from "sweetalert2";
 import { getProducts, registerSale } from "../services/api";
 
@@ -23,6 +24,7 @@ export default function Sales() {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
 
   // Modal
   const [showModal, setShowModal] = useState(false);
@@ -99,17 +101,29 @@ export default function Sales() {
     }
   }
 
-  const filteredProducts = products.filter((p) =>
-    p.nombre.toLowerCase().includes(search.toLowerCase()) ||
-    p.modelo?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredProducts = products
+    // 🔥 1. Siempre ocultamos los que no tienen stock
+    .filter((p) => p.cantidad > 0)
+    // 🔥 2. Luego aplicamos los demás filtros
+    .filter((p) => {
+      const matchesSearch =
+        p.nombre.toLowerCase().includes(search.toLowerCase()) ||
+        p.modelo?.toLowerCase().includes(search.toLowerCase());
+
+      const matchesBasicas =
+        filter === "basicas"
+          ? p.modelo?.toLowerCase().includes("basica")
+          : true;
+
+      return matchesSearch && matchesBasicas;
+    });
 
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">💰 Ventas</h1>
 
       {/* Carrito */}
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+      <div className="bg-white rounded-2xl shadow-lg shadow-gray-200 p-6 mb-10 border border-gray-100">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">🛒 Carrito</h2>
         {cart.length === 0 ? (
           <p className="text-gray-500">No hay productos en el carrito</p>
@@ -120,8 +134,8 @@ export default function Sales() {
                 const prod = products.find((p) => p.id === item.productId);
                 return (
                   <li
+                    className="flex justify-between py-3 border-b border-gray-200 text-sm text-gray-700"
                     key={item.productId}
-                    className="flex justify-between border-b py-2"
                   >
                     <span>
                       {prod?.nombre} x {item.cantidad}
@@ -131,16 +145,18 @@ export default function Sales() {
                 );
               })}
             </ul>
-            <p className="font-bold text-lg mb-4">Total: ${total}</p>
+            <p className="font-bold text-xl mb-4 text-gray-800">
+              Total: ${total}
+            </p>
             <div className="flex gap-4">
               <button
-                className="bg-blue-600 text-white px-5 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-colors"
+                className="bg-blue-600 text-white px-5 py-2.5 rounded-xl shadow hover:bg-blue-700 transition font-medium transition-colors"
                 onClick={() => setShowModal(true)}
               >
                 Registrar Venta
               </button>
               <button
-                className="bg-red-500 text-white px-5 py-2 rounded-lg shadow-md hover:bg-red-600 transition-colors"
+                className="bg-red-500 text-white px-5 py-2.5 rounded-xl shadow hover:bg-red-600 transition font-medium"
                 onClick={() => setCart([])}
               >
                 Vaciar Carrito
@@ -150,37 +166,88 @@ export default function Sales() {
         )}
       </div>
 
-      {/* Buscador */}
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Buscar producto..."
-          className="border rounded-md p-2 w-full md:w-1/3"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {/* Buscador + Filtro en la misma línea */}
+      <div className="mb-6 flex items-center justify-between gap-3">
+        {/* Input de búsqueda */}
+        <div className="relative w-full">
+          <input
+            type="text"
+            placeholder="Buscar producto..."
+            className="border rounded-lg p-2 pl-9 w-full focus:ring-2 focus:ring-blue-200 outline-none"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          {/* Icono lupa dentro del input */}
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            🔍
+          </span>
+        </div>
+
+        {/* Botón/ícono de filtros */}
+        <div>
+          <ProductFilters
+            setFilter={setFilter}
+            options={[
+              { label: "Todos", value: "all" },
+              {
+                label: "Básicas",
+                value: "basicas",
+                className: "text-blue-700 hover:bg-blue-100",
+              },
+            ]}
+          />
+        </div>
       </div>
 
-      {/* Productos */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
+      {/* Grid de productos */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {filteredProducts.map((p) => (
           <div
             key={p.id}
-            className="bg-white rounded-xl shadow-lg p-4 flex flex-col items-center hover:shadow-xl transition-shadow"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-shadow flex flex-col items-center p-4 min-h-[260px]"
           >
-            {p.imagen && (
-              <img
-                src={`${BACKEND_URL}${p.imagen}`}
-                alt={p.nombre}
-                className="w-24 h-24 object-contain mb-4"
-              />
+            <div className="w-28 h-28 flex items-center justify-center bg-gray-50 rounded-xl overflow-hidden mb-3 shadow-inner">
+              {p.imagen ? (
+                <img
+                  src={`${BACKEND_URL}${p.imagen}`}
+                  alt={p.nombre}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <span className="text-gray-400 text-sm">Sin imagen</span>
+              )}
+            </div>
+
+            <h2 className="font-semibold text-gray-800 text-center text-sm truncate w-full">
+              {p.nombre}
+            </h2>
+
+            {p.modelo && (
+              <p className="text-gray-500 text-xs mb-1 text-center truncate w-full">
+                {p.modelo}
+              </p>
             )}
-            <h2 className="font-bold text-lg text-gray-800 mb-2">{p.nombre}</h2>
-            <p className="text-gray-600 mb-1">Modelo: {p.modelo}</p>
-            <p className="text-gray-600 mb-1">Precio: ${p.precio}</p>
-            <p className="text-gray-600 mb-2">Stock: {p.cantidad}</p>
+
+            <p className="text-sm font-medium text-gray-800">
+              <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-md text-xs">
+                ${p.precio.toLocaleString()}
+              </span>
+            </p>
+            <p className="text-xs mt-1 mb-2">
+              <span
+                className={`px-2 py-0.5 rounded-md ${
+                  p.cantidad > 0
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-red-100 text-red-600"
+                }`}
+              >
+                Stock: {p.cantidad}
+              </span>
+            </p>
+
             <button
-              className="bg-green-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-600 transition-colors"
+              className="bg-green-600 text-white px-4 py-2 rounded-xl shadow hover:bg-green-700 transition font-medium mt-auto"
               onClick={() => addToCart(p)}
             >
               Agregar
@@ -192,15 +259,19 @@ export default function Sales() {
       {/* Modal de pago */}
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg p-6 w-80 shadow-lg">
-            <h2 className="text-xl font-bold mb-4">💵 Pago</h2>
-            <p className="mb-2">Total: ${total}</p>
+          <div className="bg-white rounded-2xl p-6 w-80 shadow-2xl border border-gray-200 animate-fadeIn">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
+              💵 Pago
+            </h2>
+            <p className="font-bold text-xl mb-4 text-gray-800">
+              Total: ${total}
+            </p>
             <label className="block mb-2">
               Monto recibido:
               <input
-                type="number"
-                className="border rounded-md p-2 w-full mt-1"
-                value={payment}
+                // type="number"
+                className="border border-gray-300 rounded-lg p-2.5 w-full mt-1 focus:ring-2 focus:ring-blue-300 outline-none"
+                // value={payment}
                 onChange={(e) => setPayment(Number(e.target.value))}
               />
             </label>
@@ -209,7 +280,7 @@ export default function Sales() {
             </p>
             <div className="flex justify-end gap-2">
               <button
-                className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition"
+                className="bg-gray-300 text-gray-800 px-4 py-2 rounded-xl hover:bg-gray-400 transition font-medium"
                 onClick={() => {
                   setShowModal(false);
                   setPayment(0);
@@ -220,9 +291,9 @@ export default function Sales() {
               <button
                 className={`${
                   change < 0
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
-                } text-white px-4 py-2 rounded-lg transition`}
+                    ? "bg-gray-300 cursor-not-allowed text-gray-500"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                } px-4 py-2 rounded-xl transition font-medium`}
                 disabled={change < 0}
                 onClick={handleSale}
               >

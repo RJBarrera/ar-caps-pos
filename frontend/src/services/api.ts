@@ -40,3 +40,8 @@ export async function getSalesReport(period: "day" | "week" | "month") {
   const res = await fetch(`${API_URL}/reports/${period}`);
   return res.json();
 }
+
+export async function getTopProducts(period: "day" | "week" | "month") {
+  const res = await fetch(`${API_URL}/reports/top-products?period=${period}`);
+  return res.json();
+}

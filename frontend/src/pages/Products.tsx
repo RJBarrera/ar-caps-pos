@@ -37,11 +37,40 @@ export default function Products() {
     setProducts(data);
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.files && e.target.files[0]) {
-      setImagenFile(e.target.files[0]);
-      setPreview(URL.createObjectURL(e.target.files[0]));
-    }
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file);
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d")!;
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      ctx.drawImage(img, 0, 0);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return;
+
+          const webpFile = new File(
+            [blob],
+            file.name.replace(/\.\w+$/, ".webp"),
+            {
+              type: "image/webp",
+            }
+          );
+
+          setImagenFile(webpFile);
+          setPreview(URL.createObjectURL(blob));
+        },
+        "image/webp",
+        0.8 // Calidad
+      );
+    };
   }
 
   function resetForm() {
@@ -96,20 +125,14 @@ export default function Products() {
   }
 
   const filteredProducts = products.filter((p) => {
-    // Filtro de búsqueda
     const matchesSearch =
       p.nombre.toLowerCase().includes(search.toLowerCase()) ||
       p.modelo?.toLowerCase().includes(search.toLowerCase());
 
-    // Filtro de disponibilidad
-    const matchesFilter =
-      filter === "available"
-        ? p.cantidad > 0
-        : filter === "out"
-        ? p.cantidad === 0
-        : true; // all
+    const matchesBasicas =
+      filter === "basicas" ? p.modelo?.toLowerCase().includes("basica") : true;
 
-    return matchesSearch && matchesFilter;
+    return matchesSearch && matchesBasicas;
   });
 
   return (
@@ -150,7 +173,27 @@ export default function Products() {
 
         {/* Botón/ícono de filtros */}
         <div>
-          <ProductFilters setFilter={setFilter} />
+          <ProductFilters
+            setFilter={setFilter}
+            options={[
+              { label: "Todos", value: "all" },
+              {
+                label: "Disponibles",
+                value: "available",
+                className: "text-green-700 hover:bg-green-50",
+              },
+              {
+                label: "Agotados",
+                value: "out",
+                className: "text-red-700 hover:bg-red-50",
+              },
+              {
+                label: "Básicas",
+                value: "basicas",
+                className: "text-blue-700 hover:bg-blue-100",
+              },
+            ]}
+          />
         </div>
       </div>
 
@@ -159,7 +202,7 @@ export default function Products() {
         {filteredProducts.map((p) => (
           <div
             key={p.id}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 hover:border-gray-300 flex flex-col items-center p-4 min-h-[250px]"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-shadow flex flex-col items-center p-4 min-h-[260px]"
           >
             <div className="w-28 h-28 flex items-center justify-center bg-gray-100 rounded-xl overflow-hidden mb-3">
               {p.imagen ? (
@@ -201,7 +244,7 @@ export default function Products() {
             </p>
 
             <button
-              className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-3 py-1 rounded-lg text-xs font-medium"
+              className="bg-yellow-500 text-white px-4 py-2 rounded-xl shadow hover:bg-yellow-600 transition font-medium mt-auto"
               onClick={() => openModal(p)}
             >
               Editar
@@ -235,7 +278,7 @@ export default function Products() {
               />
               <input
                 className="border border-gray-300 rounded-xl p-3 w-full focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition placeholder-gray-400"
-                placeholder="Categoría / Modelo"
+                placeholder="Categoría / Marca"
                 value={modelo}
                 onChange={(e) => setModelo(e.target.value)}
               />

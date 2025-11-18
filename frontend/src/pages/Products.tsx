@@ -90,42 +90,6 @@ async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     };
   }
 
-  // Función para redimensionar una imagen en el navegador
-  const resizeImage = (
-    file: File,
-    maxWidth: number,
-    maxHeight: number
-  ): Promise<Blob> => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.src = URL.createObjectURL(file);
-
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        let { width, height } = img;
-
-        if (width > maxWidth || height > maxHeight) {
-          const ratio = Math.min(maxWidth / width, maxHeight / height);
-          width = width * ratio;
-          height = height * ratio;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d")!;
-        ctx.drawImage(img, 0, 0, width, height);
-
-        canvas.toBlob(
-          (blob) => {
-            if (blob) resolve(blob);
-          },
-          file.type,
-          0.8
-        ); // 0.8 = calidad (80%)
-      };
-    });
-  };
-
   function resetForm() {
     setNombre("");
     setModelo("");
@@ -182,10 +146,18 @@ async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
       p.nombre.toLowerCase().includes(search.toLowerCase()) ||
       p.modelo?.toLowerCase().includes(search.toLowerCase());
 
+    // Filtro de disponibilidad
+    const matchesFilter =
+      filter === "available"
+        ? p.cantidad > 0
+        : filter === "out"
+        ? p.cantidad === 0
+        : true; // all
+
     const matchesBasicas =
       filter === "basicas" ? p.modelo?.toLowerCase().includes("basica") : true;
 
-    return matchesSearch && matchesBasicas;
+    return matchesSearch && matchesBasicas && matchesFilter;
   });
 
   return (

@@ -37,7 +37,7 @@ export default function Products() {
     setProducts(data);
   }
 
-async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -47,7 +47,7 @@ async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     img.onload = () => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d")!;
-      
+
       // Aquí puedes redimensionar si quieres
       const MAX_WIDTH = 112;
       const MAX_HEIGHT = 112;
@@ -159,6 +159,11 @@ async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
 
     return matchesSearch && matchesBasicas && matchesFilter;
   });
+
+  const categoryOptions = [
+    "Basicas",
+    "Premium"
+  ];
 
   return (
     <div className="p-4 min-h-screen">
@@ -301,26 +306,45 @@ async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
               />
-              <input
-                className="border border-gray-300 rounded-xl p-3 w-full focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition placeholder-gray-400"
-                placeholder="Categoría / Marca"
-                value={modelo}
-                onChange={(e) => setModelo(e.target.value)}
-              />
-              <input
-                // type="number"
-                className="border border-gray-300 rounded-xl p-3 w-full focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition placeholder-gray-400"
-                placeholder="Precio"
-                value={precio}
-                onChange={(e) => setPrecio(Number(e.target.value))}
-              />
-              <input
-                // type="number"
-                className="border border-gray-300 rounded-xl p-3 w-full focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition placeholder-gray-400"
-                placeholder="Cantidad"
-                value={cantidad}
-                onChange={(e) => setCantidad(Number(e.target.value))}
-              />
+              <div>
+                {/* <label className="text-sm font-medium mb-1 block">
+                  Categoría
+                </label> */}
+                <select
+                  value={modelo}
+                  onChange={(e) => setModelo(e.target.value)}
+                  className="border border-gray-300 rounded-xl p-3 w-full focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition"
+                >
+                  <option value="">Selecciona una categoría</option>
+                  {categoryOptions.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Precio</label>
+                <input
+                  // type="number"
+                  className="border border-gray-300 rounded-xl p-3 w-full focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition placeholder-gray-400"
+                  placeholder="Precio"
+                  value={precio}
+                  onChange={(e) => setPrecio(Number(e.target.value))}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">
+                  Cantidad
+                </label>
+                <input
+                  // type="number"
+                  className="border border-gray-300 rounded-xl p-3 w-full focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition placeholder-gray-400"
+                  placeholder="Cantidad"
+                  value={cantidad}
+                  onChange={(e) => setCantidad(Number(e.target.value))}
+                />
+              </div>
 
               {/* Imagen */}
               <div>

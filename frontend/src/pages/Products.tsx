@@ -52,22 +52,22 @@ export default function Products() {
       const ctx = canvas.getContext("2d")!;
 
       // Aquí puedes redimensionar si quieres
-      const MAX_WIDTH = 250;
-      const MAX_HEIGHT = 250;
+      // const MAX_WIDTH = 250;
+      // const MAX_HEIGHT = 250;
       let width = img.width;
       let height = img.height;
 
-      if (width > height) {
-        if (width > MAX_WIDTH) {
-          height = (height * MAX_WIDTH) / width;
-          width = MAX_WIDTH;
-        }
-      } else {
-        if (height > MAX_HEIGHT) {
-          width = (width * MAX_HEIGHT) / height;
-          height = MAX_HEIGHT;
-        }
-      }
+      // if (width > height) {
+      //   if (width > MAX_WIDTH) {
+      //     height = (height * MAX_WIDTH) / width;
+      //     width = MAX_WIDTH;
+      //   }
+      // } else {
+      //   if (height > MAX_HEIGHT) {
+      //     width = (width * MAX_HEIGHT) / height;
+      //     height = MAX_HEIGHT;
+      //   }
+      // }
 
       canvas.width = width;
       canvas.height = height;

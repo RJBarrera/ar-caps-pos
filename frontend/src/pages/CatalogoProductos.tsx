@@ -93,28 +93,19 @@ export default function CatalogoProductos() {
       </div>
 
       {/* Grid de productos */}
+
       {filteredProducts.length === 0 ? (
         <p className="text-center text-gray-500 mt-10">
           No se encontraron productos.
         </p>
       ) : (
         <div
-          className="
-            grid grid-cols-2
-            sm:grid-cols-3
-            md:grid-cols-4
-            lg:grid-cols-5
-            gap-6
-          "
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"
         >
           {filteredProducts.map((p) => (
             <div
               key={p.id}
-              className="
-                bg-white rounded-2xl p-4 border shadow-sm
-                hover:shadow-md transition-all cursor-pointer
-                hover:-translate-y-1
-              "
+              className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-shadow flex flex-col items-center p-4 min-h-[260px]"
             >
               {/* Imagen */}
               <div className="w-full aspect-square bg-gray-100 rounded-xl overflow-hidden mb-3">
@@ -123,13 +114,7 @@ export default function CatalogoProductos() {
                     src={`${BACKEND_URL}${p.imagen}`}
                     alt={p.nombre}
                     loading="lazy"
-                    className="
-        w-full h-full
-        object-cover
-        transition-transform duration-300
-        hover:scale-110
-        image-rendering-auto
-      "
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110 image-rendering-auto"
                   />
                 ) : (
                   <span className="text-gray-400 text-sm flex items-center justify-center h-full">
@@ -155,13 +140,24 @@ export default function CatalogoProductos() {
 
               {/* Stock */}
               <p
-                className={`
-                  text-xs mt-1 font-medium
-                  ${p.cantidad > 0 ? "text-green-600" : "text-red-500"}
-                `}
+                className={`text-xs mt-1 font-medium ${p.cantidad > 0 ? "text-green-600" : "text-red-500"}`}
               >
                 {p.cantidad > 0 ? `Stock: ${p.cantidad}` : "Agotado"}
               </p>
+
+              {/* Botón WhatsApp */}
+              <a
+                href={`https://wa.me/526678063331?text=${encodeURIComponent(
+                  `Hola, quiero información sobre esta Gorra: ${p.nombre} (${
+                    p.modelo || "Sin modelo"
+                  }), aún la tienes disponible? Gracias.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-2 text-green-600 font-medium text-xs bg-green-50 px-3 py-2 rounded-lg hover:bg-green-100 hover:scale-105 transition-all"
+              >
+                <span>📩 Info WhatsApp</span>
+              </a>
             </div>
           ))}
         </div>

@@ -221,15 +221,19 @@ export default function Sales() {
             key={p.id}
             className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-shadow flex flex-col items-center p-4 min-h-[260px]"
           >
-            <div className="w-28 h-28 flex items-center justify-center bg-gray-50 rounded-xl overflow-hidden mb-3 shadow-inner">
+            {/* Imagen */}
+            <div className="w-full aspect-square bg-gray-100 rounded-xl overflow-hidden mb-3">
               {p.imagen ? (
                 <img
                   src={`${BACKEND_URL}${p.imagen}`}
                   alt={p.nombre}
-                  className="w-full h-full object-contain"
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-110 image-rendering-auto"
                 />
               ) : (
-                <span className="text-gray-400 text-sm">Sin imagen</span>
+                <span className="text-gray-400 text-sm flex items-center justify-center h-full">
+                  Sin imagen
+                </span>
               )}
             </div>
 

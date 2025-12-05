@@ -45,6 +45,9 @@ export default function Sales() {
     setProducts(data);
   }
 
+  const totalInventario = products.reduce((sum, p) => sum + p.cantidad, 0);
+  const totalProductos = products.length;
+
   function addToCart(product: Product) {
     const exists = cart.find((c) => c.productId === product.id);
     if (exists) {
@@ -164,6 +167,17 @@ export default function Sales() {
             </div>
           </>
         )}
+      </div>
+
+      {/* Resumen minimalista */}
+      <div className="mb-3 text-[14px] text-gray-500 select-none">
+        <span className="text-gray-700 font-semibold">{totalProductos}</span>{" "}
+        productos
+        <span className="mx-1 text-gray-300">|</span>
+        <span className="text-gray-700 font-semibold">
+          {totalInventario}
+        </span>{" "}
+        unidades
       </div>
 
       {/* Buscador + Filtro en la misma línea */}

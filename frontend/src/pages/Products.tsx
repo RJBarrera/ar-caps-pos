@@ -37,6 +37,9 @@ export default function Products() {
     setProducts(data);
   }
 
+  const totalInventario = products.reduce((sum, p) => sum + p.cantidad, 0);
+  const totalProductos = products.length;
+
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -49,8 +52,8 @@ export default function Products() {
       const ctx = canvas.getContext("2d")!;
 
       // Aquí puedes redimensionar si quieres
-      const MAX_WIDTH = 112;
-      const MAX_HEIGHT = 112;
+      const MAX_WIDTH = 150;
+      const MAX_HEIGHT = 150;
       let width = img.width;
       let height = img.height;
 
@@ -160,10 +163,7 @@ export default function Products() {
     return matchesSearch && matchesBasicas && matchesFilter;
   });
 
-  const categoryOptions = [
-    "Basicas",
-    "Premium"
-  ];
+  const categoryOptions = ["Basicas", "Premium"];
 
   return (
     <div className="p-4 min-h-screen">
@@ -181,6 +181,17 @@ export default function Products() {
         >
           + Nuevo Producto
         </button>
+      </div>
+
+      {/* Resumen minimalista */}
+      <div className="mb-3 text-[14px] text-gray-500 select-none">
+        <span className="text-gray-700 font-semibold">{totalProductos}</span>{" "}
+        productos
+        <span className="mx-1 text-gray-300">|</span>
+        <span className="text-gray-700 font-semibold">
+          {totalInventario}
+        </span>{" "}
+        unidades
       </div>
 
       {/* Buscador + Filtro en la misma línea */}

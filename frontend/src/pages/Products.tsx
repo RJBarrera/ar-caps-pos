@@ -52,8 +52,8 @@ export default function Products() {
       const ctx = canvas.getContext("2d")!;
 
       // Aquí puedes redimensionar si quieres
-      const MAX_WIDTH = 150;
-      const MAX_HEIGHT = 150;
+      const MAX_WIDTH = 250;
+      const MAX_HEIGHT = 250;
       let width = img.width;
       let height = img.height;
 
@@ -245,15 +245,19 @@ export default function Products() {
             key={p.id}
             className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-shadow flex flex-col items-center p-4 min-h-[260px]"
           >
-            <div className="w-28 h-28 flex items-center justify-center bg-gray-100 rounded-xl overflow-hidden mb-3">
+            {/* Imagen */}
+            <div className="w-full aspect-square bg-gray-100 rounded-xl overflow-hidden mb-3">
               {p.imagen ? (
                 <img
                   src={`${BACKEND_URL}${p.imagen}`}
                   alt={p.nombre}
-                  className="w-full h-full object-contain"
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-110 image-rendering-auto"
                 />
               ) : (
-                <span className="text-gray-400 text-sm">Sin imagen</span>
+                <span className="text-gray-400 text-sm flex items-center justify-center h-full">
+                  Sin imagen
+                </span>
               )}
             </div>
 

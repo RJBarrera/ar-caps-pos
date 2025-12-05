@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Reports from "./pages/Reports";
 import Products from "./pages/Products";
 import Sales from "./pages/Sales";
+import CatalogoProductos from "./pages/CatalogoProductos";
 import Navbar from "./pages/Navbar";
 import Login from "./pages/Login";
 
@@ -34,6 +35,11 @@ function App() {
       {/* Navbar solo si está logueado */}
       {isLoggedIn && <Navbar onLogout={handleLogout} />}
 
+      {/* Navbar especial SOLO para el catálogo público */}
+      {!isLoggedIn && window.location.pathname === "/catalogo-productos" && (
+        <Navbar catalogMode onLogout={handleLogout} />
+      )}
+
       <div className="mx-auto bg-blue-50 min-h-screen">
         <Routes>
           {/* Ruta principal */}
@@ -56,6 +62,11 @@ function App() {
           <Route
             path="/reports"
             element={isLoggedIn ? <Reports /> : <Navigate to="/" />}
+          />
+          {/* 🔓 Ruta pública (Catálogo accesible sin login) */}
+          <Route
+            path="/catalogo-productos"
+            element={<CatalogoProductos />}
           />
 
           {/* Catch-all */}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ProductFilters from "./ProductFilters";
+import PriceFilters from "./PriceFilters";
 import Swal from "sweetalert2";
 import { getProducts, registerSale } from "../services/api";
 
@@ -25,6 +26,10 @@ export default function Sales() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [priceOrder, setPriceOrder] = useState<"none" | "asc" | "desc">("none");
+  const [minPrice, setMinPrice] = useState<number | "">("");
+  const [maxPrice, setMaxPrice] = useState<number | "">("");
+  const [showPriceFilters, setShowPriceFilters] = useState(false);
 
   // Modal
   const [showModal, setShowModal] = useState(false);
@@ -105,20 +110,30 @@ export default function Sales() {
   }
 
   const filteredProducts = products
-    // 🔥 1. Siempre ocultamos los que no tienen stock
-    .filter((p) => p.cantidad > 0)
-    // 🔥 2. Luego aplicamos los demás filtros
     .filter((p) => {
+      // Búsqueda
       const matchesSearch =
         p.nombre.toLowerCase().includes(search.toLowerCase()) ||
         p.modelo?.toLowerCase().includes(search.toLowerCase());
 
-      const matchesBasicas =
+      // Categoría basica/premium
+      const matchesCategory =
         filter === "basicas"
           ? p.modelo?.toLowerCase().includes("basica")
+          : filter === "premium"
+          ? p.modelo?.toLowerCase().includes("premium")
           : true;
 
-      return matchesSearch && matchesBasicas;
+      // Rango de precios
+      const matchesMin = minPrice === "" || p.precio >= minPrice;
+      const matchesMax = maxPrice === "" || p.precio <= maxPrice;
+
+      return matchesSearch && matchesCategory && matchesMin && matchesMax;
+    })
+    .sort((a, b) => {
+      if (priceOrder === "asc") return a.precio - b.precio;
+      if (priceOrder === "desc") return b.precio - a.precio;
+      return 0;
     });
 
   return (
@@ -209,7 +224,24 @@ export default function Sales() {
                 value: "basicas",
                 className: "text-blue-700 hover:bg-blue-100",
               },
+              {
+                label: "Premium",
+                value: "premium",
+                className: "text-red-700 hover:bg-blue-100",
+              },
             ]}
+          />
+        </div>
+        <div>
+          <PriceFilters
+            show={showPriceFilters}
+            toggle={() => setShowPriceFilters(!showPriceFilters)}
+            priceOrder={priceOrder}
+            setPriceOrder={setPriceOrder}
+            minPrice={minPrice}
+            setMinPrice={setMinPrice}
+            maxPrice={maxPrice}
+            setMaxPrice={setMaxPrice}
           />
         </div>
       </div>

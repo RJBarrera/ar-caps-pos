@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ImagePreview from "./ImagePreview";
 import ProductFilters from "./ProductFilters";
+import PriceFilters from "./PriceFilters";
 import { getProducts, createProduct, updateProduct } from "../services/api";
 
 type Product = {
@@ -27,6 +28,10 @@ export default function Products() {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false); // Estado del modal
   const [filter, setFilter] = useState("all");
+  const [priceOrder, setPriceOrder] = useState<"none" | "asc" | "desc">("none");
+  const [minPrice, setMinPrice] = useState<number | "">("");
+  const [maxPrice, setMaxPrice] = useState<number | "">("");
+  const [showPriceFilters, setShowPriceFilters] = useState(false);
 
   useEffect(() => {
     loadProducts();
@@ -144,24 +149,65 @@ export default function Products() {
     }
   }
 
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch =
-      p.nombre.toLowerCase().includes(search.toLowerCase()) ||
-      p.modelo?.toLowerCase().includes(search.toLowerCase());
+  // const filteredProducts = products.filter((p) => {
+  //   const matchesSearch =
+  //     p.nombre.toLowerCase().includes(search.toLowerCase()) ||
+  //     p.modelo?.toLowerCase().includes(search.toLowerCase());
 
-    // Filtro de disponibilidad
-    const matchesFilter =
-      filter === "available"
-        ? p.cantidad > 0
-        : filter === "out"
-        ? p.cantidad === 0
-        : true; // all
+  //   // Filtro de disponibilidad
+  //   const matchesFilter =
+  //     filter === "available"
+  //       ? p.cantidad > 0
+  //       : filter === "out"
+  //       ? p.cantidad === 0
+  //       : true; // all
 
-    const matchesBasicas =
-      filter === "basicas" ? p.modelo?.toLowerCase().includes("basica") : true;
+  //   const matchesBasicas =
+  //     filter === "basicas" ? p.modelo?.toLowerCase().includes("basica") : true;
 
-    return matchesSearch && matchesBasicas && matchesFilter;
-  });
+  //   return matchesSearch && matchesBasicas && matchesFilter;
+  // });
+
+  const filteredProducts = products
+    .filter((p) => {
+      // Búsqueda
+      const matchesSearch =
+        p.nombre.toLowerCase().includes(search.toLowerCase()) ||
+        p.modelo?.toLowerCase().includes(search.toLowerCase());
+
+      // Filtro de disponibilidad
+      const matchesFilter =
+        filter === "available"
+          ? p.cantidad > 0
+          : filter === "out"
+          ? p.cantidad === 0
+          : true; // all
+
+      // Categoría basica/premium
+      const matchesCategory =
+        filter === "basicas"
+          ? p.modelo?.toLowerCase().includes("basica")
+          : filter === "premium"
+          ? p.modelo?.toLowerCase().includes("premium")
+          : true;
+
+      // Rango de precios
+      const matchesMin = minPrice === "" || p.precio >= minPrice;
+      const matchesMax = maxPrice === "" || p.precio <= maxPrice;
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesFilter &&
+        matchesMin &&
+        matchesMax
+      );
+    })
+    .sort((a, b) => {
+      if (priceOrder === "asc") return a.precio - b.precio;
+      if (priceOrder === "desc") return b.precio - a.precio;
+      return 0;
+    });
 
   const categoryOptions = ["Basicas", "Premium"];
 
@@ -233,7 +279,24 @@ export default function Products() {
                 value: "basicas",
                 className: "text-blue-700 hover:bg-blue-100",
               },
+              {
+                label: "Premium",
+                value: "Premium",
+                className: "text-yellow-700 hover:bg-blue-100",
+              },
             ]}
+          />
+        </div>
+        <div>
+          <PriceFilters
+            show={showPriceFilters}
+            toggle={() => setShowPriceFilters(!showPriceFilters)}
+            priceOrder={priceOrder}
+            setPriceOrder={setPriceOrder}
+            minPrice={minPrice}
+            setMinPrice={setMinPrice}
+            maxPrice={maxPrice}
+            setMaxPrice={setMaxPrice}
           />
         </div>
       </div>

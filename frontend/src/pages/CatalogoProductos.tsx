@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ProductFilters from "./ProductFilters";
+import PriceFilters from "./PriceFilters";
 import { getProducts } from "../services/api";
 
 type Product = {
@@ -18,6 +19,10 @@ export default function CatalogoProductos() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [priceOrder, setPriceOrder] = useState<"none" | "asc" | "desc">("none");
+  const [minPrice, setMinPrice] = useState<number | "">("");
+  const [maxPrice, setMaxPrice] = useState<number | "">("");
+  const [showPriceFilters, setShowPriceFilters] = useState(false);
 
   useEffect(() => {
     loadProducts();
@@ -28,21 +33,32 @@ export default function CatalogoProductos() {
     setProducts(data);
   }
 
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch =
-      p.nombre.toLowerCase().includes(search.toLowerCase()) ||
-      p.modelo?.toLowerCase().includes(search.toLowerCase());
+  const filteredProducts = products
+    .filter((p) => {
+      // Búsqueda
+      const matchesSearch =
+        p.nombre.toLowerCase().includes(search.toLowerCase()) ||
+        p.modelo?.toLowerCase().includes(search.toLowerCase());
 
-    // Filtro de categoría
-    const matchesCategory =
-      filter === "basicas"
-        ? p.modelo?.toLowerCase().includes("basica")
-        : filter === "premium"
-        ? p.modelo?.toLowerCase().includes("premium")
-        : true; // all
+      // Categoría basica/premium
+      const matchesCategory =
+        filter === "basicas"
+          ? p.modelo?.toLowerCase().includes("basica")
+          : filter === "premium"
+          ? p.modelo?.toLowerCase().includes("premium")
+          : true;
 
-    return matchesSearch && matchesCategory;
-  });
+      // Rango de precios
+      const matchesMin = minPrice === "" || p.precio >= minPrice;
+      const matchesMax = maxPrice === "" || p.precio <= maxPrice;
+
+      return matchesSearch && matchesCategory && matchesMin && matchesMax;
+    })
+    .sort((a, b) => {
+      if (priceOrder === "asc") return a.precio - b.precio;
+      if (priceOrder === "desc") return b.precio - a.precio;
+      return 0;
+    });
 
   return (
     <div className="px-4 py-6 min-h-screen bg-gray-50">
@@ -90,6 +106,18 @@ export default function CatalogoProductos() {
             ]}
           />
         </div>
+        <div>
+          <PriceFilters
+            show={showPriceFilters}
+            toggle={() => setShowPriceFilters(!showPriceFilters)}
+            priceOrder={priceOrder}
+            setPriceOrder={setPriceOrder}
+            minPrice={minPrice}
+            setMinPrice={setMinPrice}
+            maxPrice={maxPrice}
+            setMaxPrice={setMaxPrice}
+          />
+        </div>
       </div>
 
       {/* Grid de productos */}
@@ -99,9 +127,7 @@ export default function CatalogoProductos() {
           No se encontraron productos.
         </p>
       ) : (
-        <div
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"
-        >
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {filteredProducts.map((p) => (
             <div
               key={p.id}
@@ -140,7 +166,9 @@ export default function CatalogoProductos() {
 
               {/* Stock */}
               <p
-                className={`text-xs mt-1 font-medium ${p.cantidad > 0 ? "text-green-600" : "text-red-500"}`}
+                className={`text-xs mt-1 font-medium ${
+                  p.cantidad > 0 ? "text-green-600" : "text-red-500"
+                }`}
               >
                 {p.cantidad > 0 ? `Stock: ${p.cantidad}` : "Agotado"}
               </p>

@@ -61,6 +61,29 @@ export default function Reports() {
     setTopProductos(data);
   };
 
+  // Exportar CSV
+  const downloadCSV = () => {
+    const rows = [
+      ["Fecha", "Total", "Productos", "Cantidad"],
+      ...report.ventas.map((s) => [
+        s.fecha,
+        s.total,
+        topProductos.map((prod) => `${prod.nombre}`).join(", "),
+        s.productos.map((p) => `${p.cantidad}`).join(", "),
+        
+        
+      ]),
+    ];
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," + rows.map((e) => e.join(",")).join("\n");
+
+    const link = document.createElement("a");
+    link.href = csvContent;
+    link.download = `reporte_${period}.csv`;
+    link.click();
+  };
+
   return (
     <div className="p-6 min-h-screen flex flex-col items-center">
       {/* Contenedor central con ancho máximo */}
@@ -85,6 +108,16 @@ export default function Reports() {
               {p === "day" ? "Diario" : p === "week" ? "Semanal" : "Mensual"}
             </button>
           ))}
+        </div>
+
+        {/* Botones de descarga */}
+        <div className="flex gap-4 mb-8 justify-center">
+          <button
+            onClick={downloadCSV}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition"
+          >
+            Descargar Reporte
+          </button>
         </div>
 
         {/* Totales */}

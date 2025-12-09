@@ -24,7 +24,7 @@ export default function ProductFilters({ setFilter, options }: ProductFiltersPro
     <div className="relative inline-block text-right">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 p-2 border rounded-lg hover:bg-gray-100 transition-shadow shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="flex items-center bg-white gap-2 p-2 border rounded-lg hover:bg-gray-100 transition-shadow shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
       >
         <Filter size={18} />
         <span className="hidden md:block text-sm text-gray-600 font-medium">Filtrar</span>

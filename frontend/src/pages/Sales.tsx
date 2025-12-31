@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import ProductFilters from "./ProductFilters";
 import PriceFilters from "./PriceFilters";
+import FloatingCartButton from "./FloatingCartButton";
+import CartModal from "./CartModal";
 import Swal from "sweetalert2";
 import { getProducts, registerSale } from "../services/api";
 
@@ -54,6 +56,17 @@ export default function Sales() {
   const totalProductos = products.length;
 
   function addToCart(product: Product) {
+    if (product.cantidad === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Sin stock",
+        text: "Este producto ya no tiene unidades disponibles",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
     const exists = cart.find((c) => c.productId === product.id);
     if (exists) {
       setCart(
@@ -164,53 +177,11 @@ export default function Sales() {
       return 0;
     });
 
+  const totalItems = cart.reduce((s, i) => s + i.cantidad, 0);
+
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">💰 Ventas</h1>
-
-      {/* Carrito */}
-      <div className="bg-white rounded-2xl shadow-lg shadow-gray-200 p-6 mb-10 border border-gray-100">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">🛒 Carrito</h2>
-        {cart.length === 0 ? (
-          <p className="text-gray-500">No hay productos en el carrito</p>
-        ) : (
-          <>
-            <ul className="mb-4">
-              {cart.map((item) => {
-                const prod = products.find((p) => p.id === item.productId);
-                return (
-                  <li
-                    className="flex justify-between py-3 border-b border-gray-200 text-sm text-gray-700"
-                    key={item.productId}
-                  >
-                    <span>
-                      {prod?.nombre} x {item.cantidad}
-                    </span>
-                    <span>${item.precio * item.cantidad}</span>
-                  </li>
-                );
-              })}
-            </ul>
-            <p className="font-bold text-xl mb-4 text-gray-800">
-              Total: ${total}
-            </p>
-            <div className="flex gap-4">
-              <button
-                className="bg-blue-600 text-white px-5 py-2.5 rounded-xl shadow hover:bg-blue-700 transition font-medium transition-colors"
-                onClick={() => setShowModal(true)}
-              >
-                Registrar Venta
-              </button>
-              <button
-                className="bg-red-500 text-white px-5 py-2.5 rounded-xl shadow hover:bg-red-600 transition font-medium"
-                onClick={() => setCart([])}
-              >
-                Vaciar Carrito
-              </button>
-            </div>
-          </>
-        )}
-      </div>
 
       {/* Resumen minimalista */}
       <div className="mb-3 text-[14px] text-gray-500 select-none">
@@ -256,6 +227,11 @@ export default function Sales() {
                 label: "Premium",
                 value: "premium",
                 className: "text-red-700 hover:bg-blue-100",
+              },
+              {
+                label: "Disponibles",
+                value: "available",
+                className: "text-green-700 hover:bg-green-50",
               },
               {
                 label: "Por terminarse",
@@ -344,63 +320,41 @@ export default function Sales() {
             </p>
 
             <button
-              className="bg-green-600 text-white px-4 py-2 rounded-xl shadow hover:bg-green-700 transition font-medium mt-auto"
+              disabled={p.cantidad === 0}
               onClick={() => addToCart(p)}
+              className={`px-4 py-2 rounded-xl shadow font-medium mt-auto transition
+                ${
+                  p.cantidad === 0
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-green-600 text-white hover:bg-green-700"
+                }`}
             >
-              Agregar
+              {p.cantidad === 0 ? "No disponible" : "Agregar"}
             </button>
           </div>
         ))}
       </div>
 
-      {/* Modal de pago */}
+      {/* Botón flotante */}
+      <FloatingCartButton
+        totalItems={totalItems}
+        onClick={() => setShowModal(true)}
+      />
+
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-2xl p-6 w-80 shadow-2xl border border-gray-200 animate-fadeIn">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
-              💵 Pago
-            </h2>
-            <p className="font-bold text-xl mb-4 text-gray-800">
-              Total: ${total}
-            </p>
-            <label className="block mb-2">
-              Monto recibido:
-              <input
-                // type="number"
-                className="border border-gray-300 rounded-lg p-2.5 w-full mt-1 focus:ring-2 focus:ring-blue-300 outline-none"
-                // value={payment}
-                onChange={(e) => setPayment(Number(e.target.value))}
-              />
-            </label>
-            <p className="mb-4 font-semibold">
-              Cambio: ${change >= 0 ? change : 0}
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                className="bg-gray-300 text-gray-800 px-4 py-2 rounded-xl hover:bg-gray-400 transition font-medium"
-                onClick={() => {
-                  setShowModal(false);
-                  setPayment(0);
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                className={`${
-                  change < 0
-                    ? "bg-gray-300 cursor-not-allowed text-gray-500"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
-                } px-4 py-2 rounded-xl transition font-medium`}
-                disabled={change < 0}
-                onClick={handleSale}
-              >
-                Aceptar
-              </button>
-            </div>
-          </div>
-        </div>
+        <CartModal
+          cart={cart}
+          products={products}
+          total={total}
+          payment={payment}
+          setPayment={setPayment}
+          change={change}
+          onClose={() => setShowModal(false)}
+          onConfirm={handleSale}
+          onClear={() => setCart([])}
+        />
       )}
     </div>
   );
 }
-

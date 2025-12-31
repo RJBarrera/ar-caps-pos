@@ -281,7 +281,7 @@ export default function Products() {
               },
               {
                 label: "Premium",
-                value: "Premium",
+                value: "premium",
                 className: "text-yellow-700 hover:bg-blue-100",
               },
             ]}
@@ -469,3 +469,4 @@ export default function Products() {
     </div>
   );
 }
+

@@ -111,24 +111,52 @@ export default function Sales() {
 
   const filteredProducts = products
     .filter((p) => {
+      // Normaliza valores seguros
+      const nombre = p.nombre?.toLowerCase() ?? "";
+      const modelo = p.modelo?.toLowerCase() ?? "";
+      const searchText = (search ?? "").toLowerCase();
+
       // Búsqueda
       const matchesSearch =
-        p.nombre.toLowerCase().includes(search.toLowerCase()) ||
-        p.modelo?.toLowerCase().includes(search.toLowerCase());
+        nombre.includes(searchText) || modelo.includes(searchText);
 
-      // Categoría basica/premium
+      // Detecta premium y estado por terminarse (>0 y <=2 unidades)
+      const isPremium = modelo.includes("premium");
+      const isEnding = p.cantidad > 0 && p.cantidad <= 2 && isPremium;
+
+      // Categoría basica/premium (manteniendo tu lógica)
       const matchesCategory =
         filter === "basicas"
-          ? p.modelo?.toLowerCase().includes("basica")
+          ? modelo.includes("basica")
           : filter === "premium"
-          ? p.modelo?.toLowerCase().includes("premium")
+          ? isPremium
           : true;
 
-      // Rango de precios
-      const matchesMin = minPrice === "" || p.precio >= minPrice;
-      const matchesMax = maxPrice === "" || p.precio <= maxPrice;
+      // Filtro de disponibilidad (incluye 'available', 'out' y 'ending')
+      const matchesFilter =
+        filter === "available"
+          ? p.cantidad > 0
+          : filter === "out"
+          ? p.cantidad === 0
+          : filter === "ending"
+          ? isEnding
+          : true; // cuando es 'all' u otro valor, no restringe por disponibilidad
 
-      return matchesSearch && matchesCategory && matchesMin && matchesMax;
+      // Rango de precios (convertimos a número para comparaciones correctas)
+      const price = Number(p.precio);
+      const min = minPrice === "" ? -Infinity : Number(minPrice);
+      const max = maxPrice === "" ? Infinity : Number(maxPrice);
+
+      const matchesMin = price >= min;
+      const matchesMax = price <= max;
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesFilter &&
+        matchesMin &&
+        matchesMax
+      );
     })
     .sort((a, b) => {
       if (priceOrder === "asc") return a.precio - b.precio;
@@ -229,6 +257,16 @@ export default function Sales() {
                 value: "premium",
                 className: "text-red-700 hover:bg-blue-100",
               },
+              {
+                label: "Por terminarse",
+                value: "ending",
+                className: "text-yellow-500 hover:bg-green-50",
+              },
+              {
+                label: "Agotados",
+                value: "out",
+                className: "text-red-700 hover:bg-red-50",
+              },
             ]}
           />
         </div>
@@ -284,15 +322,24 @@ export default function Sales() {
                 ${p.precio.toLocaleString()}
               </span>
             </p>
+
             <p className="text-xs mt-1 mb-2">
               <span
                 className={`px-2 py-0.5 rounded-md ${
-                  p.cantidad > 0
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-red-100 text-red-600"
+                  p.cantidad === 0
+                    ? "bg-red-100 text-red-600" // Sin stock
+                    : p.modelo?.toLowerCase().includes("premium") &&
+                      p.cantidad <= 2
+                    ? "bg-yellow-100 text-yellow-700" // Por terminarse (solo Premium)
+                    : "bg-blue-100 text-blue-700" // Stock normal
                 }`}
               >
-                Stock: {p.cantidad}
+                {p.cantidad === 0
+                  ? "Agotadas"
+                  : p.modelo?.toLowerCase().includes("premium") &&
+                    p.cantidad <= 2
+                  ? `Por terminarse: ${p.cantidad}`
+                  : `Disponibles: ${p.cantidad}`}
               </span>
             </p>
 

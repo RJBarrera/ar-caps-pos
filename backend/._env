@@ -9,7 +9,8 @@
 # server with the `prisma dev` CLI command, when not choosing any non-default ports or settings. The API key, unlike the 
 # one found in a remote Prisma Postgres URL, does not contain any sensitive information.
 
-DATABASE_URL="postgresql://postgres:1234@localhost:5432/arcaps_pos?schema=public"
+# DATABASE_URL="postgresql://postgres:1234@localhost:5432/arcaps_pos?schema=public"
+DATABASE_URL="postgresql://sysarcaps:0sNlEIJcnli8Hdy8vjyCTys1Sj4jZf1R@dpg-d4a3o0gdl3ps739i55n0-a.oregon-postgres.render.com/arcaps"
 VITE_API_URL=http://localhost:4000/api
 VITE_API_IMG=http://localhost:4000
 PORT=4000

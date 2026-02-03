@@ -43,12 +43,31 @@ export default function Sales() {
   );
   const change = payment - total;
 
+  // useEffect(() => {
+  //   loadProducts();
+  // }, []);
+
+  // async function loadProducts() {
+  //   const data = await getProducts();
+  //   setProducts(data);
+  // }
+
   useEffect(() => {
+    // carga inicial
     loadProducts();
+
+    // refresco cada 30 segundos
+    const interval = setInterval(() => {
+      loadProducts();
+    }, 60000);
+
+    // limpieza al desmontar el componente
+    return () => clearInterval(interval);
   }, []);
 
   async function loadProducts() {
     const data = await getProducts();
+    console.log("Obteniendo datos de productos...");
     setProducts(data);
   }
 
